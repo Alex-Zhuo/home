@@ -12,6 +12,14 @@ function goToPage(targetPage, mode) {
 
     var idx = $targetPage.index();
 
+    let pageIndex = currentPage - 1;
+    if (currentPage >= 4) {
+        pageIndex--;
+    }
+    if (currentPage == 7) {
+        pageIndex--;
+    }
+
     if (lastPage && lastPage != targetPage) {
         $('#page-' + lastPage).removeClass('page' + lastPage + '-loaded');
         pageReverts[lastPage] && pageReverts[lastPage].call();
@@ -19,7 +27,7 @@ function goToPage(targetPage, mode) {
 
     if (mode == "slide" && lastPage != targetPage) {
         $page.animate({
-            top: -winHeight * (targetPage - 1)
+            top: -winHeight * pageIndex
         }, 1300)
     } else if (mode == "fade" && lastPage != targetPage) {
         $pages.addClass("absolute").hide();
@@ -27,7 +35,7 @@ function goToPage(targetPage, mode) {
             top: 0
         });
         $targetPage.fadeIn(1000).css('z-index', 5).siblings("div.page").css('z-index', 1).fadeOut(1000);
-        setTimeout(function() {
+        setTimeout(function () {
             $pages.removeClass("absolute").show();
             $page.css({
                 top: -winHeight * idx
@@ -42,9 +50,9 @@ function goToPage(targetPage, mode) {
     if (lastPage != targetPage) {
         pageTransition = true;
         currentPage = targetPage;
-        $indicators.eq(currentPage - 1).addClass("current").siblings().removeClass("current");
+        $indicators.eq(pageIndex).addClass("current").siblings().removeClass("current");
         $targetPage.addClass("current").siblings("div.page").removeClass("current");
-        setTimeout(function() {
+        setTimeout(function () {
             lastPage = currentPage;
             $targetPage.addClass('page' + targetPage + '-loaded');
             pageEvents[targetPage] && pageEvents[targetPage].call();
@@ -57,7 +65,7 @@ function goToPage(targetPage, mode) {
             // console.info(targetPage);
             $header.find('a[data-rel=' + targetPage + ']').parent().addClass('active');
         }, 800);
-        setTimeout(function() {
+        setTimeout(function () {
             pageTransition = false;
         }, 1500);
     }
@@ -66,7 +74,7 @@ function goToPage(targetPage, mode) {
 function resetPage() {
     var $pages = $("div.page");
     window.scrollTo(0, 0);
-    setTimeout(function() {
+    setTimeout(function () {
         winWidth = $(window).width();
         winHeight = $(window).height();
         $pages.height(winHeight);
@@ -86,7 +94,7 @@ function resetPage() {
 /**
  * 首屏幻灯
  */
-var Slider = (function() {
+var Slider = (function () {
     var $slider = $('#J_p1Slider');
 
     var $wrap = $slider.children('.items');
@@ -96,19 +104,19 @@ var Slider = (function() {
         last = 0,
         pause = false;
 
-    $slider.find('.prev').click(function(e) {
+    $slider.find('.prev').click(function (e) {
         last = current;
         show(--current);
         e.preventDefault();
     });
-    $slider.find('.next').click(function(e) {
+    $slider.find('.next').click(function (e) {
         last = current;
         show(++current);
         e.preventDefault();
     });
-    $slider.find('.ctrl').hover(function() {
+    $slider.find('.ctrl').hover(function () {
         pause = true;
-    }, function() {
+    }, function () {
         pause = false;
     });
 
@@ -129,15 +137,15 @@ var Slider = (function() {
     var timer;
 
     return {
-        reset: function() {
+        reset: function () {
             $wrap.width(winWidth * len);
             $wrap.children().width(winWidth);
         },
-        disable: function() {
+        disable: function () {
             clearInterval(timer);
         },
-        enable: function() {
-            timer = setInterval(function() {
+        enable: function () {
+            timer = setInterval(function () {
                 if (pause) {
                     return;
                 }
@@ -164,7 +172,7 @@ function loopWithPause(arr, func, time) {
         if (idx === arr.length) {
             return;
         } else {
-            setTimeout(function() {
+            setTimeout(function () {
                 func.call(arr[idx], idx, arr[idx]);
                 idx++;
                 one(idx, arr);
@@ -176,7 +184,7 @@ function loopWithPause(arr, func, time) {
     one(1, arr);
 }
 
-$(function() {
+$(function () {
     $page = $("#page");
     $pages = $(".page");
     $indicators = $("#page-indicator li");
@@ -184,42 +192,55 @@ $(function() {
     winWidth = $(window).width();
     winHeight = $(window).height();
     resetPage();
-    $(window).resize(function() {
+    $(window).resize(function () {
         resetPage();
     });
     totalPage = $(".page").length;
 
     var e = 1;
-    $('body').on("mousewheel", function(t, i, a, n) {
+    $('body').on("mousewheel", function (t, i, a, n) {
         if (!pageTransition) {
             if (i <= -e) {
-                if (currentPage + 1 <= totalPage) {
+                let pageIndex = currentPage;
+                if (currentPage >= 4) {
+                    pageIndex--;
+                }
+                if (currentPage == 7) {
+                    pageIndex--;
+                }
+                if (pageIndex + 1 <= totalPage) {
                     currentPage = currentPage + 1;
+                    if (currentPage == 3 || currentPage == 6) {
+                        currentPage = currentPage + 1;
+                    }
                     goToPage(currentPage, "slide")
                 }
             } else if (i >= e) {
                 if (currentPage - 1 >= 1) {
                     currentPage = currentPage - 1;
+                    if (currentPage == 3 || currentPage == 6) {
+                        currentPage = currentPage - 1;
+                    }
                     goToPage(currentPage, "slide")
                 }
             }
         }
     });
 
-    $("#page-indicator [data-rel], #J_Header [data-rel]").click(function() {
+    $("#page-indicator [data-rel], #J_Header [data-rel]").click(function () {
         var targetPage = parseInt($(this).attr("data-rel"));
         if (!pageTransition)
             goToPage(targetPage, "fade");
         return false;
     });
     // 创建carousel2实例
-    $('.carousel2').each(function() {
+    $('.carousel2').each(function () {
         carousels.push(new carousel2({
             elem: this
         }));
     });
 
-    (function() {
+    (function () {
         var $page1 = $('#page-1'),
             $drawer = $page1.find('.modules-box'),
             $itemsInDrawer = $page1.find('.modules'),
@@ -249,11 +270,11 @@ $(function() {
         }
 
         var $modal = $('#J_modal');
-        $modal.find('.close').click(function() {
+        $modal.find('.close').click(function () {
             $modal.fadeOut();
             return false;
         });
-        $modal.on('mousewheel', function(e) {
+        $modal.on('mousewheel', function (e) {
             e.stopPropagation && e.stopPropagation();
         });
         // function showModal(option){
@@ -261,12 +282,12 @@ $(function() {
         //     $modal.fadeIn(500);
         // }
 
-        $drawerTrig.click(function() {
+        $drawerTrig.click(function () {
             openDrawer();
             showDesc(0);
         });
 
-        $lis.click(function() {
+        $lis.click(function () {
             var $self = $(this);
             var idx = $self.index();
             if (!$drawer.hasClass("on")) {
@@ -280,20 +301,20 @@ $(function() {
         var leftMoved = 1;
         var rightMoved = 0;
         var moving = 0;
-        $hideTrigLeft.mouseover(function() {
+        $hideTrigLeft.mouseover(function () {
             if (moving || leftMoved) {
                 return;
             }
             moving = 1;
             $list.animate({
                 left: 0
-            }, 800, function() {
+            }, 800, function () {
                 moving = 0;
                 leftMoved = 1;
                 rightMoved = 0;
             });
         });
-        $hideTrigRight.mouseover(function() {
+        $hideTrigRight.mouseover(function () {
             if (moving || rightMoved) {
                 return;
             }
@@ -301,7 +322,7 @@ $(function() {
             var l = listOuterWidth - winWidth;
             $list.animate({
                 left: '-' + l + 'px'
-            }, 800, function() {
+            }, 800, function () {
                 moving = 0;
                 rightMoved = 1;
                 leftMoved = 0;
@@ -334,14 +355,14 @@ $(function() {
         // }
     }());
 
-    (function() {
+    (function () {
         var $page2 = $('#page-2'),
             $page2selection = $page2.find('.desc'),
             $page2layers = $page2.find('.layer');
 
         function activeTriggerAndLayer(idx) {
             $page2selection.eq(idx).addClass('active').siblings().removeClass('active');
-            $.each($page2layers, function(i, item) {
+            $.each($page2layers, function (i, item) {
                 if (i >= idx) {
                     i++;
                     $(item).removeClass('layer' + i + '-ignore');
@@ -351,7 +372,8 @@ $(function() {
                 }
             });
         }
-        $page2selection.hover(function() {
+
+        $page2selection.hover(function () {
             activeTriggerAndLayer($(this).index());
         });
         // if($.browser.version < 10){
@@ -377,23 +399,23 @@ $(function() {
         //         $page2layers.css('top', 0);
         //     }    
         // }else{
-        pageEvents[2] = function() {
-            loopWithPause($page2selection, function(idx, item) {
+        pageEvents[2] = function () {
+            loopWithPause($page2selection, function (idx, item) {
                 $(item).addClass('animate');
                 if (idx === $page2selection.length - 1) {
-                    $.each($page2layers, function(idx, layer) {
+                    $.each($page2layers, function (idx, layer) {
                         idx++;
                         $(layer).addClass('layer' + idx + '-active');
                     });
-                    setTimeout(function() {
+                    setTimeout(function () {
                         activeTriggerAndLayer(0);
                     }, 1000);
                 }
             }, 100);
         }
-        pageReverts[2] = function() {
+        pageReverts[2] = function () {
             $page2selection.removeClass('active animate');
-            $page2layers.each(function(idx, item) {
+            $page2layers.each(function (idx, item) {
                 idx++;
                 $(item).removeClass('layer' + idx + '-ignore layer' + idx + '-active active');
             });
@@ -401,7 +423,7 @@ $(function() {
         // }
     }());
 
-    (function() {
+    (function () {
         var $page3 = $('#page-3'),
             $timelineLis = $page.find('.timeline li'),
             timelineLen = $timelineLis.length,
@@ -413,28 +435,30 @@ $(function() {
 
         function activeDotAndTimeline(idx) {
             var $target = $timelineLis.eq(idx);
+            /*console.log($target.offset().left + $target.width() / 2 - $dot.width() / 2);*/
             $dot.stop().animate({
                 left: $target.offset().left + $target.width() / 2 - $dot.width() / 2
             }, 500);
             $target.addClass("current").siblings().removeClass("current");
         }
-        $timelineLis.mouseover(function() {
+
+        $timelineLis.mouseover(function () {
             var self = this;
             clearTimeout(page3Timer);
-            page3Timer = setTimeout(function() {
+            page3Timer = setTimeout(function () {
                 page3Current = $(self).index()
                 activeDotAndTimeline(page3Current);
             }, 500);
             page3pause = 1;
-        }).mouseout(function() {
+        }).mouseout(function () {
             clearTimeout(page3Timer);
             page3pause = 0;
         });
-        pageEvents[3] = function() {
+        pageEvents[3] = function () {
             pageReverts[3]();
             activeDotAndTimeline(page3Current);
             page3Current++;
-            page3AutoRun = setInterval(function() {
+            page3AutoRun = setInterval(function () {
                 if (page3pause) {
                     return;
                 }
@@ -447,22 +471,22 @@ $(function() {
                 page3Current++;
             }, 2000);
         };
-        pageReverts[3] = function() {
+        pageReverts[3] = function () {
             page3pause = 0;
             clearInterval(page3AutoRun);
         }
     }());
 
-    (function() {
+    (function () {
         var $page4 = $('#page-4'),
             $page4descs = $page4.find('.page4-desc'),
             page4timer = 0,
             $jsItem = $page.find('.j_p4item');
 
-        $page4.find('[data-rel]').mouseover(function() {
+        $page4.find('[data-rel]').mouseover(function () {
             var id = $(this).attr('data-rel')
             $('#J_p4desc_' + id).addClass('j_active_' + id);
-        }).mouseout(function() {
+        }).mouseout(function () {
             $jsItem.removeClass('j_active_' + $(this).attr('data-rel'));
         });
 
@@ -474,9 +498,9 @@ $(function() {
             $page4circle.css('display', 'none');
             $page4shadow.css('display', 'none');
 
-            pageEvents[4] = function() {
-                page4timer = setTimeout(function() {
-                    loopWithPause($page4descs, function(idx, item) {
+            pageEvents[4] = function () {
+                page4timer = setTimeout(function () {
+                    loopWithPause($page4descs, function (idx, item) {
                         idx++;
                         if (idx === 1 || idx === 4) {
                             $(item).animate({
@@ -494,24 +518,24 @@ $(function() {
                 $page4circle.fadeIn();
                 $page4shadow.fadeIn();
             };
-            pageReverts[4] = function() {
+            pageReverts[4] = function () {
                 $page4descs.css('opacity', 0);
                 $page4circle.css('display', 'none');
                 $page4shadow.css('display', 'none');
                 clearTimeout(page4timer);
             };
         } else {
-            pageEvents[4] = function() {
-                page4timer = setTimeout(function() {
-                    loopWithPause($page4descs, function(idx, item) {
+            pageEvents[4] = function () {
+                page4timer = setTimeout(function () {
+                    loopWithPause($page4descs, function (idx, item) {
                         idx++;
                         $(item).addClass('page4-desc' + idx + '-animate');
                     }, 300);
                 }, 1000);
             };
-            pageReverts[4] = function() {
-                setTimeout(function() {
-                    $.each($page4descs, function(idx, item) {
+            pageReverts[4] = function () {
+                setTimeout(function () {
+                    $.each($page4descs, function (idx, item) {
                         idx++;
                         $(item).removeClass('page4-desc' + idx + '-animate');
                     });
@@ -521,35 +545,35 @@ $(function() {
         }
     }());
 
-    (function() {
+    (function () {
         var $partners = $('#page-6').find('.partners');
         var tmpl = '';
-        $.each(PARTNERS, function(idx, item) {
+        $.each(PARTNERS, function (idx, item) {
             tmpl += '<li class="logo logo-' + idx + '"><a href="###">' + item.name + '</a></li>';
         });
         $partners.html(tmpl);
-        pageEvents[6] = function() {
-            loopWithPause($partners.children(), function(idx, item) {
+        pageEvents[6] = function () {
+            loopWithPause($partners.children(), function (idx, item) {
                 $(item).addClass('active');
             }, 30);
         }
-        pageReverts[6] = function() {
+        pageReverts[6] = function () {
             $partners.children().removeClass('active');
         }
     }());
 
-    (function() {
+    (function () {
         var $mapCtn = $('#J_mapCtn'),
             mapInited = 0,
             map;
-        pageEvents[7] = function() {
+        pageEvents[7] = function () {
             if (mapInited) {
                 return false;
             }
             mapInited = 1;
             map = new BMap.Map('J_mapCtn');
-            map.centerAndZoom(new BMap.Point(113.94679,22.556374), 32);
-            var marker = new BMap.Marker(new BMap.Point(113.94679,22.556374));
+            map.centerAndZoom(new BMap.Point(113.94679, 22.556374), 32);
+            var marker = new BMap.Marker(new BMap.Point(113.94679, 22.556374));
             // var control = new BMap.NavigationControl({
             //     anchor : BMAP_ANCHOR_TOP_LEFT
             // });
@@ -562,28 +586,28 @@ $(function() {
             }
             var infoWindow = new BMap.InfoWindow("地址：广东省深圳市南山科技园 <br /> 电话：18617196757", opts); // 创建信息窗口对象
 
-            marker.addEventListener('click', function() {
+            marker.addEventListener('click', function () {
                 map.openInfoWindow(infoWindow, marker.getPosition()); // 打开信息窗口
             });
         };
     }());
 
-    (function() {
+    (function () {
         var $left = $('#page-5').find('.left .inner');
         var $right = $('#page-5').find('.right .inner');
 
-        var half = Math.floor(QA.length/2);
+        var half = Math.floor(QA.length / 2);
 
         var ltmp = '';
         var rtmp = '';
-        for(var i = 0, l = QA.length; i<l; i++){
+        for (var i = 0, l = QA.length; i < l; i++) {
             var temp = '<dl>';
-            temp += '   <dt>'+ QA[i].name +'</dt>';
-            temp += '    <dd>'+ QA[i].answer +'</dd>';
+            temp += '   <dt>' + QA[i].name + '</dt>';
+            temp += '    <dd>' + QA[i].answer + '</dd>';
             temp += '</dl>';
-            if(i >= half){
+            if (i >= half) {
                 rtmp += temp;
-            }else{
+            } else {
                 ltmp += temp;
             }
         }
@@ -593,12 +617,12 @@ $(function() {
 
         var $dls = $('#page-5').find('dl');
 
-        pageEvents[5] = function(){
-            loopWithPause($dls, function(idx, item){
+        pageEvents[5] = function () {
+            loopWithPause($dls, function (idx, item) {
                 $(item).addClass('active');
             }, 100);
         }
-        pageReverts[5] = function(){
+        pageReverts[5] = function () {
             $dls.removeClass('active');
         }
     }());
