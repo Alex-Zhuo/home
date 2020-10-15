@@ -414,7 +414,7 @@ $(function() {
         function activeDotAndTimeline(idx) {
             var $target = $timelineLis.eq(idx);
             $dot.stop().animate({
-                left: /*$target.offset().left + */$target.width() / 2 - $dot.width() / 2
+                left: $target.offset().left + $target.width() / 2 - $dot.width() / 2
             }, 500);
             $target.addClass("current").siblings().removeClass("current");
         }
